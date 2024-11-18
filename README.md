@@ -137,3 +137,105 @@ The next step involved creating a CI/CD pipeline to fetch the code from GitHub.
 
 For this, I accessed the Jenkins dashboard and clicked on “New Item.”
 
+![image](https://github.com/user-attachments/assets/e048a73e-dabd-4a95-b84b-e7aff34786fd)
+
+It asked for a name, and I provided the name as todo-app.
+
+Selected the Item type as Freestyle project.
+
+Then clicked on Ok.
+
+![image](https://github.com/user-attachments/assets/e2450255-805c-48ca-bcdd-2b881cd9fabd)
+
+Provided the description.
+
+![image](https://github.com/user-attachments/assets/68f38e3e-da1a-4add-8f62-da8e3d56c81c)
+
+In the Source Code Management section, I selected Git and needed to add the Repository URL and credentials.
+
+For the credentials, I needed to create a credential on GitHub. I went to Settings, then Personal access token, and generated a new token.
+
+![image](https://github.com/user-attachments/assets/c7dc9b07-bd3e-499b-a66e-53bb7d0c3a56)
+
+I provided a note and selected the necessary scopes before clicking on “Generate token.”
+
+![image](https://github.com/user-attachments/assets/c0278bf2-8211-41e0-9209-6ba43d0bb9b2)
+
+I added that token as a password on the credentials
+
+![image](https://github.com/user-attachments/assets/ff208a62-4f54-4fcd-8086-1e5d202a036e)
+
+In the Build Triggers section, I configured the GitHub hook trigger for Git SCM polling, enabling Jenkins to automatically trigger builds when it receives a webhook from GitHub.
+
+![image](https://github.com/user-attachments/assets/9b0f40ea-dea9-4cd6-9bd2-ee5ab64839ba)
+
+In the Build Steps, I defined the actions Jenkins should take after fetching the code, such as building a Docker image. To do this, I clicked on “Add build step” and selected “Execute shell.”
+
+I provided the below commands for building and deploying Docker.
+
+```
+docker build -t todo-app .
+docker run -p 8001:8001 -d todo-app
+```
+
+docker build -t todo-app . command will instruct Docker to build a new image using the Dockerfile located in the current directory.
+
+docker run -p 8001:8001 -d todo-app command will runs a new container from the todo-app image. The -p 8001:8001 option maps port 8001 of your host (the EC2 instance) to port 8001 of the container. This allows you to access the application running inside the container from outside the container on your EC2 instance’s public IP at port 8001.
+
+![image](https://github.com/user-attachments/assets/a8b16d76-2892-4dd0-930f-9a74c59ad1f1)
+
+After providing the command, I clicked on save.
+
+Then, ran Build Now.
+
+![image](https://github.com/user-attachments/assets/8028480d-37da-4018-8809-dbfae19842ef)
+
+After clicking “Build Now,” I encountered an error. I suspected it was related to my branch name, and it turned out I was correct.
+
+![image](https://github.com/user-attachments/assets/715c180c-31f1-4fb1-b143-269c7a96e884)
+
+I provided the branch name as master when in the repository it is mentioned as main.
+
+![image](https://github.com/user-attachments/assets/e6376c3d-77e7-4fa7-9baf-a706e213b913)
+
+I modified it and built it again.
+
+Okay… and I had several errors at this point :|
+
+Now, I received an error indicating that there was a “permission denied” issue while trying to connect to the Docker daemon on the EC2 instance.
+
+![image](https://github.com/user-attachments/assets/3949afc9-ee06-4e61-bc48-a0d649cc0040)
+
+Jenkins accessing Docker, which is controlled locally on the EC2 instance by user permissions. Adding Jenkins to the Docker group allowed it to use Docker without needing root privileges.
+
+```
+sudo usermod -aG docker jenkins
+```
+
+After that, I restarted Jenkins to ensure the permissions took effect.
+
+```
+sudo systemctl restart jenkins
+```
+
+I ran the build again, and finally, it succeeded.
+
+![image](https://github.com/user-attachments/assets/6a8b8e85-4c37-4594-8a1d-e72114d9c2dc)
+
+I tried to access the application, but it wasn’t loading. It seemed there were some dependency issues that caused the Docker container to exit.
+
+I made some changes to my application’s code and added an additional dependency in the requirements.txt, which brought the Docker container back up.
+
+![image](https://github.com/user-attachments/assets/93953e47-7170-47d1-9327-e453851dbad6)
+
+But still, the URL was not loading in the browser.
+
+The issue was that the code specified port 80, so I changed it to 8001 and attempted to build again. However, the build failed again because a container was already running. I had to stop the running container before starting the build process again.
+
+Now it was successfully up, and I could access my application also.
+
+![image](https://github.com/user-attachments/assets/117e162d-0037-45b3-9843-419eb8dca610)
+
+### Step 4: GitHub Webhook Integration
+
+
