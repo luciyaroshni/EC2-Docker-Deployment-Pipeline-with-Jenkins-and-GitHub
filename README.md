@@ -238,4 +238,52 @@ Now it was successfully up, and I could access my application also.
 
 ### Step 4: GitHub Webhook Integration
 
+To set up GitHub Webhook Integration for Jenkins, I configured my GitHub repository to send a webhook to Jenkins whenever there’s a push event. This triggered Jenkins to rebuild and redeploy my Docker container automatically.
+
+I set up SSH key authentication for secure communication between my server and GitHub.
+
+I navigated to Settings in GitHub, then clicked on SSH and GPG keys.
+
+![image](https://github.com/user-attachments/assets/591c7f29-7980-4a0c-a0f2-092bbdd132df)
+
+Clicked on Add SSH key
+
+![image](https://github.com/user-attachments/assets/20f58799-8efd-4b38-9f32-e2f5730a13b0)
+
+I successfully added the key to my GitHub.
+
+Next, I wanted to create a webhook in my GitHub repository.
+
+I navigated to the specific repository, accessed Settings, and then clicked on Webhooks. I clicked on Add webhook.
+
+![image](https://github.com/user-attachments/assets/128718c1-a88f-4c30-889f-962b6d10d6f7)
+
+I specified the Payload URL, which is the URL of my Jenkins server that will handle the incoming webhook requests. I also set the Content-Type to application/json, which is the format for the data sent from GitHub to Jenkins.
+
+Clicked on Add webhook
+
+![image](https://github.com/user-attachments/assets/cf71518c-2293-4aaf-8ea2-fc0c65346edd)
+
+It was successfully created.
+
+![image](https://github.com/user-attachments/assets/f3a59d1a-8469-468c-a896-08bf563697ef)
+
+However, I encountered a problem. After making changes, the code was automatically pushed to Jenkins. During the building process, it failed because the old container was still running and occupying the same port.
+
+
+![image](https://github.com/user-attachments/assets/02f86f98-8474-4a44-b45b-324e9859c3f7)
+
+So I modified the Jenkin pipeline to handle the old containers.
+
+![image](https://github.com/user-attachments/assets/5a80baf0-331a-49f6-9c4f-9895f2ea264e)
+
+Since the container name was dynamically changing, I specified a fixed name in the script, ensuring that the container would always be created with this designated name.
+
+After modifying the code, the build ran successfully.
+
+![image](https://github.com/user-attachments/assets/dd115fdd-4071-4ac5-ae26-bd10681d1881)
+
+As you can see, I created it successfully. I have implemented a CI/CD pipeline that integrates Jenkins with GitHub for automated deployment of a Docker application on an EC2 instance.
+
+
 
